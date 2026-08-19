@@ -1,0 +1,4 @@
+interface:
+  display_name: "项目阶段编排"
+  short_description: "协调中大型软件项目的设计实施审查人工审批与交接流程"
+  default_prompt: "Use $project-phase-orchestrator to coordinate this project from design handoff through review."
