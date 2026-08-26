@@ -1,0 +1,7 @@
+interface:
+  display_name: "项目实施编排"
+  short_description: "动态调度子代理实施既定计划，并由主代理统一集成验收"
+  default_prompt: "Use $project-implementation-orchestrator to implement the approved objective with dynamic subagent scheduling and final integration."
+
+policy:
+  allow_implicit_invocation: false
