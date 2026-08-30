@@ -131,7 +131,7 @@ agent-reach doctor --json
 - [社交媒体](references/social.md) — 小红书, Twitter, B站, V2EX, Reddit, Facebook, Instagram（多后端/登录态命令组）
 - [职场招聘](references/career.md) — LinkedIn
 - [开发工具](references/dev.md) — GitHub CLI
-- [微信公众号](references/wechat.md) — wxcli 文章读取和经确认的 Word 草稿导入
+- [微信公众号](references/wechat.md) — WeChat OA 文章发现、读取和安全草稿准备
 - [网页阅读](references/web.md) — Jina Reader, RSS
 - [视频播客](references/video.md) — YouTube, B站, 小宇宙
 - [金融行情](references/finance.md) — 雪球股票行情、搜索、热门内容
