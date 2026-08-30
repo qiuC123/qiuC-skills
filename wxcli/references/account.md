@@ -60,7 +60,7 @@ wxcli --json account draft import-word ".\正文.docx" --cover ".\封面.png" --
 把 `preview.html` 交给用户检查。只有用户明确确认该预览可以上传后，才能执行：
 
 ```powershell
-wxcli --json account draft import-word ".\正文.docx" --cover ".\封面.png" --output ".\草稿预览" --confirm
+wxcli --json account draft import-word ".\正文.docx" --cover ".\封面.png" --confirm
 ```
 
 此命令只新建一个未发布草稿，不发布、不群发，也不修改已有草稿。正文图片上传
