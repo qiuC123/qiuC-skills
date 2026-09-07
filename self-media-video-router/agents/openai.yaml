@@ -1,0 +1,4 @@
+interface:
+  display_name: "自媒体视频路由"
+  short_description: "为短视频创作选择已安装的 Codex 能力。"
+  default_prompt: "使用 $self-media-video-router 为我规划一条讲 Codex 的短视频。"
