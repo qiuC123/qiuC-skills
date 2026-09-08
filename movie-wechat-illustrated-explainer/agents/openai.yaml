@@ -1,6 +1,0 @@
-interface:
-  display_name: "电影公众号图文解说"
-  short_description: "从本地原片制作公众号图文解说，像给没看过电影的朋友讲故事"
-  default_prompt: "使用 $movie-wechat-illustrated-explainer，把我的本地电影和字幕制作成完整公众号图文稿，像给没看过电影的朋友讲故事，并完成配图、DOCX 排版和检查。"
-policy:
-  allow_implicit_invocation: true

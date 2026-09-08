@@ -1,0 +1,4 @@
+interface:
+  display_name: "故事视频制作"
+  short_description: "衔接电影、动画剧集与漫画的素材核查、配音剪辑和视频成片检查"
+  default_prompt: "使用 $story-video-producer，根据现有稿件、影片或漫画页继续制作故事视频，按来源核查候选片段或图格，再回改旁白并完成本次要求的制作阶段。"

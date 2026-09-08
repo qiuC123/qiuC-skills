@@ -10,7 +10,7 @@ from pathlib import Path
 from unittest import mock
 
 
-SKILL = Path(__file__).resolve().parents[1] / "movie-wechat-illustrated-explainer"
+SKILL = Path(__file__).resolve().parents[1] / "story-wechat-producer"
 SCRIPT = SKILL / "scripts" / "init_project.py"
 
 
@@ -40,6 +40,15 @@ class MovieWechatInitializerTests(unittest.TestCase):
         except (NotImplementedError, OSError) as exc:
             self.skipTest(f"Symbolic links unavailable in this environment: {exc}")
 
+    def run_registry(self, data, *extra):
+        registry = self.base / "素材注册表.json"
+        registry.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+        return subprocess.run(
+            [sys.executable, "-X", "utf8", str(SCRIPT), "--root", str(self.root),
+             "--title", "跨媒介测试", "--sources-json", str(registry), *extra],
+            capture_output=True, text=True, encoding="utf-8",
+        )
+
     def assert_rejected_in_both_modes(self):
         for extra in (("--dry-run",), ()):
             result = self.run_init(*extra)
@@ -65,9 +74,12 @@ class MovieWechatInitializerTests(unittest.TestCase):
             data.decode("utf-8")
             self.assertNotIn(b"\r", data)
         project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+        self.assertEqual(project["schema_version"], 2)
         self.assertEqual(project["title"], "测试影片")
         self.assertEqual(project["source"]["video"], str(self.video.resolve()))
         self.assertEqual(project["source"]["subtitle"], str(self.subtitle.resolve()))
+        self.assertEqual(project["sources"][0]["source_id"], "FILM-01")
+        self.assertEqual(project["sources"][0]["video"], project["source"]["video"])
         self.assertEqual(project["current_phase"], 0)
         self.assertFalse(project["publication_authorized"])
         self.assertFalse(list(self.root.rglob("build_manifest.json")))
@@ -80,6 +92,118 @@ class MovieWechatInitializerTests(unittest.TestCase):
             self.assertIn(field, header)
         ledger = (self.root / "05_必选截图" / "导出记录.md").read_text(encoding="utf-8")
         self.assertIn("| source_video_hash_or_id |", ledger)
+
+    def test_episodic_registry_resolves_each_source_and_retains_story_order(self):
+        second = self.base / "第2集.mkv"
+        second.write_bytes(b"initializer episode fixture")
+        sources = [
+            {"source_id": "E02", "source_type": "animation", "version": "BD", "episode": 2,
+             "order": 2, "video": second.name},
+            {"source_id": "E01", "source_type": "animation", "version": "BD", "episode": 1,
+             "order": 1, "video": self.video.name, "subtitle": self.subtitle.name},
+        ]
+        result = self.run_registry({"sources": sources})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+        self.assertNotIn("source", project)  # No misleading single-master compatibility alias.
+        self.assertEqual([item["source_id"] for item in project["sources"]], ["E01", "E02"])
+        self.assertEqual([item["episode"] for item in project["sources"]], [1, 2])
+        self.assertEqual(project["sources"][0]["video"], str(self.video))
+        self.assertEqual(project["sources"][1]["video"], str(second))
+        self.assertEqual(project["sources"][0]["subtitle"], str(self.subtitle))
+
+    def test_manga_registry_needs_no_video_and_preserves_page_labels(self):
+        pages = self.base / "漫画第2卷"
+        pages.mkdir()
+        (pages / "001.png").write_bytes(b"page path fixture, decoding is a later phase")
+        mapping = [{"file_page": 1, "page_file": "001.png", "printed_page": "封面"}]
+        manga = {"source_id": "M02", "source_type": "manga", "version": "第2版",
+                 "volume": 2, "path": pages.name, "reading_order": "rtl", "page_map": mapping}
+        result = self.run_registry({"sources": [manga]}, "--dry-run")
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertFalse(self.root.exists())
+        result = self.run_registry({"sources": [manga]})
+        self.assertEqual(result.returncode, 0, result.stderr)
+        project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+        self.assertNotIn("source", project)
+        actual = project["sources"][0]
+        self.assertNotIn("video", actual)
+        self.assertEqual(actual["path"], str(pages))
+        self.assertEqual(actual["reading_order"], "rtl")
+        self.assertEqual(actual["page_map"], mapping)
+        self.assertEqual(actual["volume"], 2)
+
+    def test_subtitle_only_registry_can_start_without_fabricating_video(self):
+        result = self.run_registry([{
+            "source_id": "F01", "source_type": "film", "subtitle": self.subtitle.name,
+        }])
+        self.assertEqual(result.returncode, 0, result.stderr)
+        project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+        self.assertNotIn("source", project)
+        self.assertNotIn("video", project["sources"][0])
+        self.assertEqual(project["sources"][0]["version"], "unverified")
+        self.assertEqual(project["sources"][0]["subtitle"], str(self.subtitle))
+
+    def test_legacy_project_normalization_is_read_only_and_preserves_existing_state(self):
+        legacy = {"schema_version": 1, "source": {
+            "video": self.video.name, "subtitle": self.subtitle.name,
+        }, "current_phase": 5, "publication_authorized": True, "custom_note": "keep"}
+        before = json.dumps(legacy, ensure_ascii=False)
+        normalize = runpy.run_path(str(SCRIPT))["normalize_source_registry"]
+        result = normalize(legacy, self.base)
+        self.assertEqual(json.dumps(legacy, ensure_ascii=False), before)
+        self.assertEqual(result[0]["source_id"], "FILM-01")
+        self.assertEqual(result[0]["video"], str(self.video))
+        self.assertEqual(result[0]["subtitle"], str(self.subtitle))
+        self.assertFalse(self.root.exists())
+
+    def test_invalid_registries_do_not_create_project(self):
+        valid = {"source_id": "F01", "source_type": "film", "video": self.video.name}
+        invalid = [
+            {"sources": []},
+            {"sources": [valid, valid]},
+            {"sources": [dict(valid, source_type="book")]},
+            {"sources": [dict(valid, order=0)]},
+            {"sources": [dict(valid, order=1), dict(valid, source_id="F02", order=1)]},
+            {"sources": [dict(valid, video="missing.mkv")]},
+            {"sources": [dict(valid, video={"path": self.video.name})]},
+            {"sources": [{"source_id": "M01", "source_type": "manga", "path": str(self.base),
+                          "reading_order": "guess"}]},
+        ]
+        for value in invalid:
+            with self.subTest(registry=value):
+                for extra in (("--dry-run",), ()):
+                    result = self.run_registry(value, *extra)
+                    self.assertEqual(result.returncode, 2, result.stdout)
+                    self.assertFalse(self.root.exists())
+
+    def test_non_string_optional_source_paths_are_rejected_before_writing(self):
+        for source_type in ("film", "animation"):
+            for key in ("video", "subtitle"):
+                for value in ([], {}, False, 0, None):
+                    with self.subTest(source_type=source_type, field=key, value=value):
+                        source = {"source_id": "S01", "source_type": source_type,
+                                  "video": self.video.name, "subtitle": self.subtitle.name}
+                        source[key] = value
+                        for extra in (("--dry-run",), ()):
+                            result = self.run_registry([source], *extra)
+                            self.assertEqual(result.returncode, 2, result.stdout)
+                            self.assertIn(f"Source path {key} for S01 must be a string", result.stderr)
+                            self.assertFalse(self.root.exists())
+
+    def test_empty_string_optional_source_paths_remain_supported(self):
+        for key in ("video", "subtitle"):
+            with self.subTest(field=key):
+                self.root = self.base / f"empty-{key}"
+                source = {"source_id": "S01", "source_type": "film",
+                          "video": self.video.name, "subtitle": self.subtitle.name}
+                source[key] = ""
+                result = self.run_registry([source])
+                self.assertEqual(result.returncode, 0, result.stderr)
+                project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+                self.assertEqual(project["sources"][0][key], "")
+                other = "subtitle" if key == "video" else "video"
+                self.assertEqual(project["sources"][0][other], str(self.base / source[other]))
 
     def test_nonempty_project_with_unrelated_files_is_supported(self):
         self.root.mkdir()

@@ -1,0 +1,6 @@
+interface:
+  display_name: "故事公众号图文制作"
+  short_description: "把电影、动画或漫画制作成故事图文，核对素材并完成配图、排版与检查"
+  default_prompt: "使用 $story-wechat-producer，把我提供的电影、动画或漫画素材制作成公众号故事图文，完成素材核验、配图、DOCX 排版与检查。"
+policy:
+  allow_implicit_invocation: true
