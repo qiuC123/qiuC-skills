@@ -10,6 +10,7 @@
 | [`wechat-oa`](wechat-oa) | [`qiuC-tools/CLI/wechat-oa`](https://github.com/qiuC123/qiuC-tools/tree/main/CLI/wechat-oa) | Skill 从 `qiuC-tools` 的固定 Release 下载并校验 Windows 工具 |
 | [`wxcli`](wxcli) | 同一个 WeChat OA 工具 | 仅保留旧名称兼容，新接入优先使用 `wechat-oa` |
 | [`agent-reach`](agent-reach) | [`Panniantong/Agent-Reach`](https://github.com/Panniantong/Agent-Reach) | 上游 Skill 的审阅副本，并增加微信公众号适配 |
+| [`movie-wechat-illustrated-explainer`](movie-wechat-illustrated-explainer) | 本地电影、字幕与 FFmpeg；附 Python 项目初始化脚本 | 按阶段核对剧情、规划原片截图并制作公众号图文解说与 DOCX |
 
 关系可以概括为：
 
