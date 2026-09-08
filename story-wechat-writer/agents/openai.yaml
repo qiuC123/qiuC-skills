@@ -1,0 +1,4 @@
+interface:
+  display_name: "公众号故事解说写作"
+  short_description: "将电影、动画与漫画写成面向新读者的公众号故事，兼顾因果与个人理解"
+  default_prompt: "使用 $story-wechat-writer，把这部作品写成给没看过的人读的公众号故事解说，讲清剧情与必要设定，语气像朋友聊天。"

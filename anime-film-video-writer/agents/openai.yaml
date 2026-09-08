@@ -1,4 +1,0 @@
-interface:
-  display_name: "影视视频解说写作"
-  short_description: "面向没看过作品的观众，编写旁白与原片原声共同叙事的影视视频文案"
-  default_prompt: "使用 $anime-film-video-writer，为这部作品写一份抖音影视解说，像给没看过故事的朋友讲述，用旁白与原片原声共同推进，并交付配音稿和原片插入表。"

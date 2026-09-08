@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频故事解说写作"
+  short_description: "为电影、动画与漫画编写故事旁白，结合原片原声或页格展示安排"
+  default_prompt: "使用 $story-video-writer，为这部作品写一份面向新观众的抖音故事解说，按影视或漫画素材安排旁白与原作展示，并交付配音稿和素材编排表。"

@@ -1,4 +1,0 @@
-interface:
-  display_name: "自媒体视频制作路由"
-  short_description: "衔接影视文案、原片核查与视频制作，同时保留通用视频任务入口"
-  default_prompt: "使用 $self-media-video-router，根据现有字幕、初稿和原片继续制作影视解说，先核查候选片段，再回改旁白并完成本次要求的制作阶段。"
