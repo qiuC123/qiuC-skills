@@ -31,7 +31,10 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Create a staged movie-to-WeChat illustrated article workspace."
     )
-    parser.add_argument("--root", required=True, help="New or empty project directory")
+    parser.add_argument(
+        "--root", required=True,
+        help="Project directory with no conflicting template files or directory paths",
+    )
     parser.add_argument("--title", required=True, help="Film title")
     parser.add_argument("--video", required=True, help="Existing local master video")
     parser.add_argument("--subtitle", help="Existing local ASS/SRT subtitle")
@@ -41,7 +44,9 @@ def parse_args() -> argparse.Namespace:
 
 
 def validate_args(args: argparse.Namespace) -> tuple[Path, Path, Path | None]:
-    root = Path(args.root).expanduser().resolve()
+    root = Path(args.root).expanduser().absolute()
+    reject_symlink(root)
+    root = root.resolve()
     video = Path(args.video).expanduser().resolve()
     subtitle = Path(args.subtitle).expanduser().resolve() if args.subtitle else None
 
@@ -54,6 +59,38 @@ def validate_args(args: argparse.Namespace) -> tuple[Path, Path, Path | None]:
     if root.exists() and not root.is_dir():
         raise NotADirectoryError(f"Project root is not a directory: {root}")
     return root, video, subtitle
+
+
+def reject_symlink(path: Path) -> None:
+    if path.is_symlink():
+        raise ValueError(f"Refusing symbolic link in project path: {path}")
+
+
+def validate_directory_chain(path: Path) -> None:
+    """Check existing directory components before any mkdir or file write."""
+    for directory in reversed((path, *path.parents)):
+        reject_symlink(directory)
+        if directory.exists() and not directory.is_dir():
+            raise NotADirectoryError(f"Project directory path is not a directory: {directory}")
+
+
+def validate_plan(root: Path, files: dict[str, str]) -> list[Path]:
+    """Use the same complete destination preflight for dry runs and real runs."""
+    planned = [root / rel for rel in files]
+    directories = [root, *(root / rel for rel in DIRECTORIES)]
+    directories.extend(path.parent for path in planned)
+    for directory in directories:
+        validate_directory_chain(directory)
+
+    conflicts = []
+    for path in planned:
+        reject_symlink(path)
+        if path.exists():
+            conflicts.append(path)
+    if conflicts:
+        conflict_lines = "\n".join(str(path) for path in conflicts)
+        raise FileExistsError(f"Refusing to overwrite existing files:\n{conflict_lines}")
+    return planned
 
 
 def templates(title: str, video: Path, subtitle: Path | None, blocks: int) -> dict[str, str]:
@@ -72,7 +109,8 @@ def templates(title: str, video: Path, subtitle: Path | None, blocks: int) -> di
         "00_总控/阶段状态.md": (
             f"# {title}：公众号图文解说阶段状态\n\n"
             "- 当前阶段：0（编辑目标与授权）\n"
-            "- 下一批准门：确认素材验收与虚拟分段\n"
+            "- 本次授权范围：待根据用户请求记录；已授权阶段可连续执行\n"
+            "- 用户指定的检查点：待记录；未指定时不逐阶段重复询问\n"
             "- 上传／发布授权：否\n"
         ),
         "01_素材验收/素材验收.md": (
@@ -92,8 +130,11 @@ def templates(title: str, video: Path, subtitle: Path | None, blocks: int) -> di
         ),
         "02_事实表/事实表模板.md": (
             "# 分块事实表模板\n\n"
-            "| fact_id | 起止时间 | 地点 | 当时已知身份 | 说话者／动作主体 | 画面动作 | 对白摘要 | 直接结果 | 下一剧情作用 | 截图候选 | 证据等级 | 不确定项 |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "claim_type 区分 observable_fact（观察事实）、character_statement（角色陈述）、"
+            "inference（推断）、interpretation（主题解读）；evidence_source 记录原片画面、音频、"
+            "字幕或片内文字及定位；外部补充资料另行记录。明确说过一句话，不等于这句话的内容已被证实。\n\n"
+            "| fact_id | 起止时间 | 地点 | 当时已知身份 | 说话者／动作主体 | 画面动作 | 对白摘要 | 直接结果 | 下一剧情作用 | 截图候选 | claim_type | evidence_source | evidence_level（证据等级） | 不确定项 |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
         ),
         "02_事实表/争议清单.md": (
             "# 争议与待复核清单\n\n"
@@ -113,8 +154,8 @@ def templates(title: str, video: Path, subtitle: Path | None, blocks: int) -> di
         ),
         "05_必选截图/导出记录.md": (
             "# 截图导出记录\n\n"
-            "| shot_id | 源时间码 | 文件名 | 宽 | 高 | 像素格式 | 字节数 | SHA-256 | 视觉检查 |\n"
-            "| --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
+            "| shot_id | 源时间码 | source_video_hash_or_id | 文件名 | 宽 | 高 | 像素格式 | 字节数 | SHA-256 | 视觉检查 |\n"
+            "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n"
         ),
     }
 
@@ -124,11 +165,7 @@ def main() -> int:
     try:
         root, video, subtitle = validate_args(args)
         files = templates(args.title, video, subtitle, args.blocks)
-        planned = [root / rel for rel in files]
-        conflicts = [path for path in planned if path.exists()]
-        if conflicts:
-            conflict_lines = "\n".join(str(path) for path in conflicts)
-            raise FileExistsError(f"Refusing to overwrite existing files:\n{conflict_lines}")
+        planned = validate_plan(root, files)
 
         plan = {
             "root": str(root),
@@ -140,13 +177,15 @@ def main() -> int:
             print(json.dumps(plan, ensure_ascii=False, indent=2))
             return 0
 
-        root.mkdir(parents=True, exist_ok=True)
-        for rel in DIRECTORIES:
-            (root / rel).mkdir(parents=True, exist_ok=True)
+        for directory in [root, *(root / rel for rel in DIRECTORIES)]:
+            validate_directory_chain(directory)
+            directory.mkdir(parents=True, exist_ok=True)
         for rel, content in files.items():
             path = root / rel
+            validate_directory_chain(path.parent)
+            reject_symlink(path)
             path.parent.mkdir(parents=True, exist_ok=True)
-            with path.open("w", encoding="utf-8", newline="\n") as handle:
+            with path.open("x", encoding="utf-8", newline="\n") as handle:
                 handle.write(content)
         print(json.dumps(plan, ensure_ascii=False, indent=2))
         return 0
