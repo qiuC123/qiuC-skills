@@ -1,18 +1,20 @@
-# Workflow and phase gates
+# Workflow and acceptance checks
 
 Use the phases as a default shape, not as universal fixed counts. A two-hour feature often fits 8–12 virtual blocks and roughly 24–40 final images, but the story and user brief decide the actual numbers.
 
+Apply acceptance checks internally and continue within the user's authorized deliverables. Only explicit user checkpoints require staged approval. Preserve completed work on resume; a wording edit does not require reindexing the film or exporting unchanged frames.
+
 ## Phase 0: Editorial contract
 
-Agree on:
+Establish from the user's brief, asking only about material gaps:
 
 - full plot recap, thematic interpretation, or both;
 - friend-telling-a-story tone, degree of commentary, spoiler notice, and target length;
 - original-film screenshots versus cover/derivative art;
 - target deliverable such as Markdown, DOCX, or WeChat-ready assets;
-- approval gates and files that must remain frozen.
+- explicit user checkpoints and files that must remain frozen.
 
-Acceptance: the scope explicitly says what this phase does not authorize.
+Acceptance: the requested deliverables, spoiler boundary, and any user checkpoints are clear. A complete illustrated-article request covers the necessary local phases. An outline-only or text-only request ends at that deliverable. Upload and publication are separate actions governed by existing user authorization.
 
 ## Phase 1: Source acceptance and searchable index
 
@@ -21,6 +23,8 @@ Verify the local master with `ffprobe`: duration, dimensions, frame rate, video 
 Parse external ASS/SRT subtitles into a searchable timeline. Build chapter or shot contact sheets. Split the film only as virtual time ranges using location, current mission, and conflict turn; keep short boundary context for analysis.
 
 Create the character reveal table before writing: first appearance, first clear face, first named identity, first disclosed ability, and major costume or identity changes.
+
+Mark which disclosures carry a real mystery or reversal. A routine name can help recognition before the film says it aloud; a concealed identity or relationship must not be exposed by prose or an illustration early.
 
 Acceptance:
 
@@ -33,19 +37,25 @@ Acceptance:
 
 Analyze each virtual block using the schema in `schemas.md`. Subtitles accelerate search but never replace visual confirmation for speakers, actions, transformations, or temporal state.
 
-Use low-resolution contact sheets only for ambiguous sequences. Put unresolved speaker identity, hidden causality, soul/consciousness claims, flashback versus present-time questions, and open-ending identity claims into the dispute list.
+Reuse the source index and inspect additional low-resolution frames for ambiguous sequences. Put unresolved speaker identity, hidden causality, soul/consciousness claims, flashback versus present-time questions, and open-ending identity claims into the dispute list.
 
 Merge through one integrator. Check monotonic time order, duplicate events, cross-block handoffs, reveal order, and factual wording.
 
+Keep `claim_type`, `evidence_source`, and `evidence_level` separate. Attribute character statements until independent film evidence establishes the underlying claim. When needed, research a specific newcomer comprehension gap using the background guidance in `qa-and-build.md`; keep those sources separate from film fact cards.
+
 Acceptance:
 
-- every important claim traces to a time range and evidence type;
+- every important film claim traces to a time range, claim type, and evidence source;
 - disputes remain isolated instead of being “solved” by confident prose;
-- no article draft has been written unless the user authorized the writing phase.
+- writing proceeds when included in the user's task, without an extra phase-specific permission request.
 
 ## Phase 3: Coverage map and single-author narration
 
 First create a coverage map with chapters and required event groups. Then one writer converts accepted fact cards into prose.
+
+Write for someone who has not seen the film. Introduce necessary identities, relationships, and settings at the point of need. Use plot causality to organize the article; the fact table stays in source-time order even if narration briefly supplies earlier context. Preserve meaningful mysteries and signal time shifts. Length comes from explaining difficult transitions and choices, not describing every shot.
+
+Integrate background as a short, conversational explanation where it resolves a named difficulty. Distinguish the movie, the novel, external knowledge, and personal interpretation in reader-friendly language. Keep source IDs and research notes in sidecar records; use readable references where helpful. Use the available `anime-film-commentary-writer` for prose and voice if appropriate, without making it a required dependency.
 
 Use this paragraph rhythm when it fits:
 
@@ -57,8 +67,9 @@ Acceptance:
 
 - the article remains understandable without images;
 - major actions and causal transitions are not reduced to location labels;
-- identities are not revealed early;
+- identity mysteries and key reversals are not revealed early; routine names support recognition;
 - report-like phrases and backstage review notes are absent from reader prose;
+- commentary has concrete scene support, background earns its place, and headings are used only when helpful;
 - stable paragraph IDs and fact-card links exist outside visible copy.
 
 ## Phase 4: Screenshot manifest
@@ -74,13 +85,13 @@ Acceptance:
 - all paragraph IDs resolve exactly once;
 - every image has an editorial purpose;
 - all major characters and turns are adequately covered;
-- only the manifest is final at this phase unless export was separately authorized.
+- the manifest passes review before export; continue to export if it is part of the requested deliverable.
 
 ## Phase 5: Final frame export
 
-Export only approved frames from the master video stream. Do not burn subtitles, watermark, crop, scale, sharpen, or recolor the archival set unless explicitly requested.
+Export selected frames from the checked manifest and master video stream. Do not burn subtitles, watermark, crop, scale, sharpen, or recolor the archival set unless explicitly requested.
 
-Keep an export ledger with filename, ID, source timecode, dimensions, byte size, hash, and visual result. Preserve alternatives until the final visual check passes.
+Keep an export ledger with filename, ID, source timecode, source video hash or stable version ID, dimensions, byte size, hash, and visual result. Preserve alternatives until the final visual check passes.
 
 Create two sets when useful:
 
@@ -89,16 +100,16 @@ Create two sets when useful:
 
 Acceptance:
 
-- file set exactly matches the approved manifest;
+- file set exactly matches the checked manifest;
 - all files decode and have expected dimensions;
 - no black/transition/wrong-subject frames;
-- a human has viewed every final image.
+- every final image has been visually inspected with a recorded reviewer and result; agent inspection is sufficient unless the user requested human approval. Escalate unresolved questions together and never invent a human review.
 
 ## Phase 6: Mechanical article build
 
 Treat Markdown or another plain-text source as the only text authority. Bind images by stable paragraph IDs. Generate DOCX mechanically; do not make the DOCX a second hand-edited text source.
 
-Keep dynamic structure and hashes in one generated manifest rather than repeating hard-coded counts across scripts and reports. Updating frozen inputs requires an explicit re-lock action and a rebuild.
+Keep dynamic structure and hashes in one generated manifest rather than repeating hard-coded counts across scripts and reports. Updating frozen inputs requires a recorded re-lock action and a rebuild within the authorized revision; respect files the user explicitly froze.
 
 Acceptance:
 
@@ -117,7 +128,7 @@ Acceptance:
 - the chosen cover version is explicit;
 - film frames and AI art are not confused;
 - repeated whole-image regeneration has not introduced identity or costume drift;
-- publication remains a separate authorization.
+- any upload or publication follows the user's authorization for that action.
 
 ## Review roles
 
@@ -127,4 +138,4 @@ When review capacity exists, separate these perspectives:
 2. newcomer reviewer: can identify characters and follow causality;
 3. document reviewer: structure, image order, rendering, mobile readability.
 
-One reviewer can cover multiple roles, but the questions must remain distinct.
+Agents can perform these reviews with the relevant evidence and visual tools. One reviewer can cover multiple roles, but the questions must remain distinct; human approval applies only when requested or needed to resolve a blocker.
