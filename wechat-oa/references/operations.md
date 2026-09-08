@@ -8,7 +8,7 @@
 - SHA-256 文件：`https://github.com/qiuC123/qiuC-tools/releases/download/wechat-oa-v0.5.1/wechat-oa-0.5.1-windows-x64.zip.sha256`
 - 固定 SHA-256：`bb348471aea7dac2c1f4e80e4c6a815a509ec584ba09305999f1c08014bd360a`
 
-只有 Windows x64 支持该发布包。`wechat-oa` 与 `wxcli` 都不存在时，先向用户说明下载
+只有 Windows x64 支持该发布包。`wechat-oa` 不存在时，先向用户说明下载
 版本、来源、哈希和目标位置；只有取得明确授权后才能下载或解压。默认解压到新建的临时
 目录，使用绝对路径执行离线检查，不修改用户级 `PATH` 或持久安装目录：
 

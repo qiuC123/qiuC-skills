@@ -28,8 +28,7 @@ discovery as a complete WeChat index.
 
 ## Core workflow
 
-1. Run `wechat-oa --version`. If the command is missing, try the supported
-   compatibility command `wxcli --version`. If both are missing, read the
+1. Run `wechat-oa --version`. If the command is missing, read the
    installation-source section in [references/operations.md](references/operations.md),
    report the pinned Windows release and request explicit authorization before
    downloading or extracting it. Never modify `PATH` or a persistent install

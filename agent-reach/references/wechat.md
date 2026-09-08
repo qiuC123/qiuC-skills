@@ -1,8 +1,7 @@
 # 微信公众号 / WeChat Official Account
 
 微信公众号任务优先使用专用 **WeChat OA**，不要先走 Jina Reader 或通用浏览器抓取。
-新安装使用 `wechat-oa`；仅当该命令不存在时使用兼容命令 `wxcli`，两者的参数和 JSON
-契约相同。
+统一使用 `wechat-oa`。命令不存在时，按 WeChat OA Skill 的安装说明处理，不回退到旧名称。
 
 ## 关键词发现
 
