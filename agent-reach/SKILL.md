@@ -1,11 +1,9 @@
 ---
 name: agent-reach
 description: >
-  MUST USE when user wants to 调研/research/搜索/search/查/找/look up anything
-  on the internet — e.g. 全网调研 X / 帮我调研一下 X / 查一下 X / 搜搜 X /
-  看看大家怎么评价 X / X 上有什么讨论 / research this topic。
-
-  Also MUST USE when user mentions any platform or shares any URL/链接:
+  用于需要实际从互联网获取内容，且适合由 Agent Reach 平台后端完成的搜索、调研和页面读取。
+  已有匹配的专用 skill 或连接器时优先使用；仅提到发布平台、材料内的网址，或处理已有本地文件时不触发。
+  支持的平台包括：
   小红书/xiaohongshu/xhs, Twitter/推特/X, B站/bilibili, Reddit, Facebook,
   Instagram, V2EX, LinkedIn/领英/招聘/求职/jobs, YouTube, GitHub code search, 小宇宙播客,
   雪球/股票行情, RSS feeds, or any web URL.
@@ -14,8 +12,8 @@ description: >
   Zero config for 6 channels. Run `agent-reach doctor --json` to see which
   backend serves each platform right now.
 
-  NOT for: 写报告/数据分析/翻译等内容加工（本 skill 只负责从互联网获取内容）；
-  发帖/评论/点赞等写操作；已有专门 skill 的平台（先用专门 skill）。
+  NOT for: 写报告/数据分析/翻译/本地字幕与视频处理等内容加工；
+  发帖/评论/点赞等写操作。本 skill 只负责互联网获取子任务，不接管调用方的写作或制作流程。
 
   【路由方式】SKILL.md 包含路由表和常用命令，复杂场景需按需阅读对应分类的 references/*.md。
   分类：search / social (小红书/推特/B站/V2EX/Reddit/Facebook/Instagram) / career(LinkedIn) / dev(github) / web(网页/文章/RSS) / video(YouTube/B站/播客) / finance(雪球/股票)。
@@ -25,9 +23,9 @@ metadata:
 
 # Agent Reach — 互联网能力路由器
 
-16 平台、多后端。**本 skill 存在时必须用它访问这些平台，不要自己发明方案。**
+16 平台、多后端。先检查是否有匹配的专用 skill 或连接器；选择 Agent Reach 处理互联网获取子任务后，按本文和对应 reference 使用已支持的后端，不猜测命令。
 
-## 常驻规则（全程适用）
+## 互联网获取子任务的规则
 
 1. **动手前先体检**：多后端/登录态平台（小红书/Reddit/B站/Twitter/Facebook/Instagram）先跑
    `agent-reach doctor --json`。`active_backend` 有值时按它选命令组；`active_backend: null`
@@ -36,11 +34,8 @@ metadata:
 2. **声明你在用什么**：开始干活前说一句「使用 agent-reach 的 X 平台 / Y 后端」。
 3. **失败按 references 里的重试链处理**，不要瞎猜命令。
 4. **全网调研类任务**：组合多平台（Exa 搜索 + Twitter/Reddit 看讨论 + 小红书/B站看中文场景），并行收集再汇总。
-5. **替用户盯版本**：完成一次较大的调研/多平台任务后，顺手跑
-   `agent-reach check-update`（很快，一个 API 调用）。有新版就在收尾汇报里附一句：
-   「Agent Reach 有新版 vX.Y.Z，复制这句话给我即可更新：帮我更新 Agent Reach：
-   https://raw.githubusercontent.com/Panniantong/agent-reach/main/docs/update.md」。
-   不要中断当前任务去更新，也不要重复提醒同一个版本。
+5. **按需检查版本**：用户要求检查更新，或具体兼容问题需要时，运行已安装工具支持的
+   `agent-reach check-update`。版本查询和实际更新分开；不把更新检查当作调研或制作任务的收尾门槛，不自动升级。
 
 ## 路由表
 
@@ -121,7 +116,8 @@ agent-reach doctor --json
 
 ## 工作区规则
 
-**不要在 agent workspace 创建文件。** 使用 `/tmp/` 存放临时输出，`~/.agent-reach/` 存放持久数据。
+Agent Reach 自身的临时抓取输出放在系统临时目录，持久配置放在 `~/.agent-reach/`。
+调用方需要保存的资料、字幕、文案和媒体工程按用户指定工作区及上层流程处理；本规则不禁止创建这些交付物。
 
 ## 详细文档
 
