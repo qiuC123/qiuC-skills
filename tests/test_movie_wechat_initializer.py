@@ -177,6 +177,34 @@ class MovieWechatInitializerTests(unittest.TestCase):
                     self.assertEqual(result.returncode, 2, result.stdout)
                     self.assertFalse(self.root.exists())
 
+    def test_non_string_optional_source_paths_are_rejected_before_writing(self):
+        for source_type in ("film", "animation"):
+            for key in ("video", "subtitle"):
+                for value in ([], {}, False, 0, None):
+                    with self.subTest(source_type=source_type, field=key, value=value):
+                        source = {"source_id": "S01", "source_type": source_type,
+                                  "video": self.video.name, "subtitle": self.subtitle.name}
+                        source[key] = value
+                        for extra in (("--dry-run",), ()):
+                            result = self.run_registry([source], *extra)
+                            self.assertEqual(result.returncode, 2, result.stdout)
+                            self.assertIn(f"Source path {key} for S01 must be a string", result.stderr)
+                            self.assertFalse(self.root.exists())
+
+    def test_empty_string_optional_source_paths_remain_supported(self):
+        for key in ("video", "subtitle"):
+            with self.subTest(field=key):
+                self.root = self.base / f"empty-{key}"
+                source = {"source_id": "S01", "source_type": "film",
+                          "video": self.video.name, "subtitle": self.subtitle.name}
+                source[key] = ""
+                result = self.run_registry([source])
+                self.assertEqual(result.returncode, 0, result.stderr)
+                project = json.loads((self.root / "project.json").read_text(encoding="utf-8"))
+                self.assertEqual(project["sources"][0][key], "")
+                other = "subtitle" if key == "video" else "video"
+                self.assertEqual(project["sources"][0][other], str(self.base / source[other]))
+
     def test_nonempty_project_with_unrelated_files_is_supported(self):
         self.root.mkdir()
         unrelated = self.root / "用户笔记.md"

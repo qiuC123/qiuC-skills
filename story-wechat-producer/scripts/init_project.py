@@ -98,6 +98,9 @@ def normalize_source_registry(data: object, base_dir: Path) -> list[dict]:
             raise ValueError(f"Version must be a non-empty string for {source_id}")
 
         if source_type in ("film", "animation"):
+            for key in ("video", "subtitle"):
+                if key in item and not isinstance(item[key], str):
+                    raise ValueError(f"Source path {key} for {source_id} must be a string")
             if not item.get("video") and not item.get("subtitle"):
                 raise ValueError(f"Video source {source_id} needs a video or subtitle path")
             for key in ("video", "subtitle"):

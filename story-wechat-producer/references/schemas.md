@@ -6,6 +6,8 @@ Use stable IDs. Do not make downstream assets depend on exact prose wording.
 
 New projects use `schema_version: 2` and `sources`, an ordered registry. Each entry has a unique `source_id`, `source_type` (`film`, `animation`, or `manga`), `version`, and `order`. A subtitle-only video entry supports drafting with visual/audio checks pending. A source path existing does not mean its content is verified.
 
+Video and subtitle paths must be strings when present. An unavailable optional path may be omitted or set to `""`; lists, objects, numbers, booleans, and `null` are rejected. Each film/animation entry still needs at least one non-empty video or subtitle path.
+
 ```json
 {
   "sources": [
